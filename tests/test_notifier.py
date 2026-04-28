@@ -48,7 +48,7 @@ def test_alert_notifier_sends_gmail_smtp_message(monkeypatch) -> None:
             password="app-password",
             from_address="alerts@example.test",
             to_addresses=["ops@example.test"],
-            subject_prefix="[watchdog]",
+            subject_prefix="[docker-health-agent]",
         ),
     )
     event = AlertEvent(
@@ -73,5 +73,5 @@ def test_alert_notifier_sends_gmail_smtp_message(monkeypatch) -> None:
     message = smtp.messages[0]
     assert message["From"] == "alerts@example.test"
     assert message["To"] == "ops@example.test"
-    assert message["Subject"] == "[watchdog] CRITICAL rms-postgres: manual_intervention_required"
+    assert message["Subject"] == "[docker-health-agent] CRITICAL rms-postgres: manual_intervention_required"
     assert "Container rms-postgres has been unhealthy for 120s." in message.get_content()

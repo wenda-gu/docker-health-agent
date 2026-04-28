@@ -27,7 +27,7 @@ docker volume create "$STATE_VOLUME" >/dev/null
 
 export DOCKER_HEALTH_AGENT_CONFIG_DIR="$CONFIG_DIR"
 
-docker compose -f "$COMPOSE_FILE" up -d --build watchdog
+docker compose -f "$COMPOSE_FILE" up -d --build docker-health-agent
 
 echo "docker-health-agent is deployed."
 echo "Source: $REPO_ROOT"

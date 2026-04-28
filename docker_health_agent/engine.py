@@ -323,7 +323,7 @@ class HealthAgent:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Conservative Docker health watchdog.")
+    parser = argparse.ArgumentParser(description="Conservative Docker health agent.")
     parser.add_argument("--config", default="config.yaml", help="Path to config.yaml")
     parser.add_argument("--env-file", default=".env", help="Path to .env file")
     parser.add_argument(

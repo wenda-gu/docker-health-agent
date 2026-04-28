@@ -1,6 +1,6 @@
 # docker-health-agent
 
-`docker-health-agent` is a conservative Docker watchdog for a single host running multiple Compose services behind a shared edge proxy.
+`docker-health-agent` is a conservative Docker health agent for a single host running multiple Compose services behind a shared edge proxy.
 
 It is intentionally boring:
 
@@ -18,17 +18,17 @@ On April 24, 2026, the live Hostinger Debian host at `100.121.74.70` was running
 
 - `edge-proxy-proxy-1`
 - `gu-wenda-site-app-1`
-- `docker-app-1`
+- `rms-app`
 - `rms-postgres`
-- `docker-postgres_backup-1`
+- `rms-postgres-backup`
 - `ink2score-frontend-1`
 - `ink2score-api-1`
 - `ink2score-recognizer-1`
 
 Current health coverage on that host:
 
-- `edge-proxy-proxy-1`, `gu-wenda-site-app-1`, `docker-app-1`, `rms-postgres`, `ink2score-frontend-1`, `ink2score-api-1`, and `ink2score-recognizer-1` now have Docker healthchecks in their local compose contracts.
-- `docker-postgres_backup-1` is still intentionally liveness-only and should usually stay `auto_restart: false`.
+- `edge-proxy-proxy-1`, `gu-wenda-site-app-1`, `rms-app`, `rms-postgres`, `ink2score-frontend-1`, `ink2score-api-1`, and `ink2score-recognizer-1` have Docker healthchecks in their local compose contracts.
+- `rms-postgres-backup` is intentionally conservative and should usually stay `auto_restart: false`.
 
 The compose contracts in the sibling repos now define the Docker label contract locally. Once those repos are redeployed on the host, the agent no longer needs a hardcoded service inventory.
 
@@ -130,7 +130,7 @@ Important discovery settings:
 
 - `docker.discovery.*_label` lets you rename the label keys if needed, but the defaults are the intended contract
 - `include_compose_projects` lets you restrict discovery to specific Compose projects
-- `exclude_container_names` is a safety valve for one-off containers you never want the watchdog to touch
+- `exclude_container_names` is a safety valve for one-off containers you never want `docker-health-agent` to touch
 
 Important service flags, whether discovered from labels or provided as static overrides:
 
@@ -193,8 +193,8 @@ If a container is marked `auto_restart: false`, the agent will never restart it.
 
 ## Deploy On The Hostinger Server With Docker Compose
 
-This repository owns the watchdog source, Compose file, mutable config path, and deployment command.
-Application repositories should only expose Docker healthchecks and `com.gu.health-agent.*` labels; they should not vendor this repo or run the watchdog container themselves.
+This repository owns the `docker-health-agent` source, Compose file, mutable config path, and deployment command.
+Application repositories should only expose Docker healthchecks and `com.gu.health-agent.*` labels; they should not vendor this repo or run the `docker-health-agent` container themselves.
 
 The default live layout is:
 
