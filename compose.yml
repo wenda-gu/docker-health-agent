@@ -36,3 +36,4 @@ services:
 volumes:
   docker-health-agent-state:
     name: docker-health-agent-state
+    external: true

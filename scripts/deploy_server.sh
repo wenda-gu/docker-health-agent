@@ -4,6 +4,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CONFIG_DIR="${DOCKER_HEALTH_AGENT_CONFIG_DIR:-$HOME/docker-health-agent-config}"
 COMPOSE_FILE="$REPO_ROOT/compose.yml"
+STATE_VOLUME="docker-health-agent-state"
 
 if ! command -v docker >/dev/null 2>&1; then
   echo "Missing required command: docker" >&2
@@ -22,6 +23,7 @@ fi
 
 chmod 600 "$CONFIG_DIR/.env" 2>/dev/null || true
 chmod 644 "$CONFIG_DIR/config.yaml" 2>/dev/null || true
+docker volume create "$STATE_VOLUME" >/dev/null
 
 export DOCKER_HEALTH_AGENT_CONFIG_DIR="$CONFIG_DIR"
 
