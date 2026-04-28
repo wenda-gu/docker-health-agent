@@ -74,6 +74,12 @@ Run the tests:
 ./.venv/bin/pytest
 ```
 
+Build the container image:
+
+```bash
+docker build -t docker-health-agent .
+```
+
 ## Label Contract
 
 The recommended contract is Docker-label discovery with Docker healthchecks as the source of truth.
