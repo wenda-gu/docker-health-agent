@@ -42,8 +42,10 @@ The compose contracts in the sibling repos now define the Docker label contract 
 - `docker_health_agent/recovery.py`: alert text and severity helpers
 - `docker_health_agent/state.py`: persisted restart and alert state
 - `tests/`: regression coverage
+- `compose.yml`: preferred Docker Compose deployment for the shared server
 - `systemd/docker-health-agent.service`: Debian systemd unit
 - `scripts/install_server.sh`: idempotent server install/update helper
+- `scripts/deploy_server.sh`: idempotent Docker Compose deploy/update helper
 
 ## Quickstart
 
@@ -78,6 +80,12 @@ Build the container image:
 
 ```bash
 docker build -t docker-health-agent .
+```
+
+Deploy it with the repo-owned Compose contract:
+
+```bash
+DOCKER_HEALTH_AGENT_CONFIG_DIR="$HOME/docker-health-agent-config" ./scripts/deploy_server.sh
 ```
 
 ## Label Contract
@@ -162,8 +170,9 @@ alerts:
     starttls: true
 ```
 
-The agent persists restart history and alert dedupe state in `/var/lib/docker-health-agent/state.json` by default.
-The CLI defaults to a local `state.json` for rootless local runs; the systemd unit explicitly uses `/var/lib/docker-health-agent/state.json`.
+The Docker Compose deployment persists restart history and alert dedupe state in the named Docker volume `docker-health-agent-state`.
+The systemd unit still uses `/var/lib/docker-health-agent/state.json`.
+The CLI defaults to a local `state.json` for rootless local runs.
 
 The agent also supports an optional legacy `services:` list in `config.yaml`. That path remains available for exceptions, but the preferred steady-state setup is label discovery with `services: []`.
 
@@ -182,7 +191,68 @@ This project deliberately does not:
 
 If a container is marked `auto_restart: false`, the agent will never restart it.
 
-## Deploy On The Hostinger Server
+## Deploy On The Hostinger Server With Docker Compose
+
+This repository owns the watchdog source, Compose file, mutable config path, and deployment command.
+Application repositories should only expose Docker healthchecks and `com.gu.health-agent.*` labels; they should not vendor this repo or run the watchdog container themselves.
+
+The default live layout is:
+
+- source checkout: `/home/gwd/docker-health-agent`
+- mutable config: `/home/gwd/docker-health-agent-config`
+- container name: `docker-health-agent`
+- Compose project: `docker-health-agent`
+- state volume: `docker-health-agent-state`
+
+First-time setup or routine update:
+
+```bash
+ssh gwd@100.121.74.70
+cd ~/docker-health-agent
+git pull --ff-only
+DOCKER_HEALTH_AGENT_CONFIG_DIR="$HOME/docker-health-agent-config" ./scripts/deploy_server.sh
+```
+
+Runtime config lives outside git:
+
+- `/home/gwd/docker-health-agent-config/.env`
+- `/home/gwd/docker-health-agent-config/config.yaml`
+
+Gmail credentials belong in `/home/gwd/docker-health-agent-config/.env`, never in any app repo:
+
+```bash
+GMAIL_SMTP_USERNAME=your-address@gmail.com
+GMAIL_APP_PASSWORD=your-gmail-app-password
+ALERT_EMAIL_FROM=your-address@gmail.com
+ALERT_EMAIL_TO=destination@gmail.com
+```
+
+Enable email alerts in `/home/gwd/docker-health-agent-config/config.yaml`:
+
+```yaml
+alerts:
+  enabled: true
+  email:
+    enabled: true
+    smtp_host: "smtp.gmail.com"
+    smtp_port: 587
+    username: "${GMAIL_SMTP_USERNAME}"
+    password: "${GMAIL_APP_PASSWORD}"
+    from_address: "${ALERT_EMAIL_FROM}"
+    to_addresses:
+      - "${ALERT_EMAIL_TO}"
+    starttls: true
+```
+
+Useful verification commands:
+
+```bash
+docker compose -f ~/docker-health-agent/compose.yml ps
+docker inspect docker-health-agent --format '{{ index .Config.Labels "com.docker.compose.project" }} {{ range .Mounts }}{{ .Source }}->{{ .Destination }} {{ end }}'
+docker logs --tail 100 docker-health-agent
+```
+
+## Alternative Systemd Install
 
 Copy the repository to the server, usually at `/opt/docker-health-agent`, then run the install helper:
 

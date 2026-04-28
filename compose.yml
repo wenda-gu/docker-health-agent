@@ -1,0 +1,38 @@
+name: docker-health-agent
+
+services:
+  watchdog:
+    container_name: docker-health-agent
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ${DOCKER_HEALTH_AGENT_CONFIG_DIR:?DOCKER_HEALTH_AGENT_CONFIG_DIR is required}/.env
+    environment:
+      PYTHONUNBUFFERED: "1"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${DOCKER_HEALTH_AGENT_CONFIG_DIR:?DOCKER_HEALTH_AGENT_CONFIG_DIR is required}:/config
+      - docker-health-agent-state:/state
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"from docker_health_agent.config import load_config; load_config('/config/config.yaml', '/config/.env'); print('ok')\" || exit 1",
+        ]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  docker-health-agent-state:
+    name: docker-health-agent-state
