@@ -1,0 +1,20 @@
+[Unit]
+Description=Docker Health Agent
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/docker-health-agent
+EnvironmentFile=-/opt/docker-health-agent/.env
+ExecStart=/opt/docker-health-agent/.venv/bin/python /opt/docker-health-agent/agent.py --config /opt/docker-health-agent/config.yaml --env-file /opt/docker-health-agent/.env --state-file /var/lib/docker-health-agent/state.json
+Restart=always
+RestartSec=10
+StateDirectory=docker-health-agent
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+

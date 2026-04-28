@@ -1,0 +1,40 @@
+poll_interval_seconds: 60
+
+docker:
+  discovery:
+    enabled_label: "com.gu.health-agent.enabled"
+    name_label: "com.gu.health-agent.name"
+    auto_restart_label: "com.gu.health-agent.auto-restart"
+    critical_label: "com.gu.health-agent.critical"
+    public_url_label: "com.gu.health-agent.public-url"
+    include_compose_projects: []
+    exclude_container_names: []
+
+alerts:
+  enabled: false
+  webhook_url: "${ALERT_WEBHOOK_URL}"
+  request_timeout_seconds: 10
+  email:
+    enabled: false
+    smtp_host: "smtp.gmail.com"
+    smtp_port: 587
+    username: "${GMAIL_SMTP_USERNAME}"
+    password: "${GMAIL_APP_PASSWORD}"
+    from_address: "${ALERT_EMAIL_FROM}"
+    to_addresses:
+      - "${ALERT_EMAIL_TO}"
+    subject_prefix: "[docker-health-agent]"
+    starttls: true
+    timeout_seconds: 10
+
+recovery:
+  enabled: true
+  unhealthy_grace_period_seconds: 120
+  max_restarts_per_container_per_hour: 3
+  cooldown_seconds_after_restart: 180
+  starting_alert_threshold_seconds: 600
+  alert_repeat_after_seconds: 1800
+
+# Optional static overrides for legacy or non-labeled services.
+# Leave this empty when every managed service follows the Docker label contract.
+services: []
