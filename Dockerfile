@@ -10,4 +10,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . ./
 
-CMD ["python", "/opt/docker-health-agent/agent.py", "--config", "/config/config.yaml", "--env-file", "/config/.env", "--state-file", "/state/state.json"]
+RUN mkdir -p /config /state
+
+CMD ["python", "/opt/docker-health-agent/agent.py", "--config", "/config/config.yaml", "--state-file", "/state/state.json"]
