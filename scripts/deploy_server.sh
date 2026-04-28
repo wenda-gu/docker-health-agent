@@ -27,6 +27,16 @@ docker volume create "$STATE_VOLUME" >/dev/null
 
 export DOCKER_HEALTH_AGENT_CONFIG_DIR="$CONFIG_DIR"
 
+existing_service="$(
+  docker inspect docker-health-agent \
+    --format '{{ index .Config.Labels "com.docker.compose.service" }}' \
+    2>/dev/null || true
+)"
+if [[ -n "$existing_service" && "$existing_service" != "docker-health-agent" ]]; then
+  echo "Removing legacy docker-health-agent container from service '$existing_service'."
+  docker rm -f docker-health-agent >/dev/null
+fi
+
 docker compose -f "$COMPOSE_FILE" up -d --build docker-health-agent
 
 echo "docker-health-agent is deployed."
