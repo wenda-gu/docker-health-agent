@@ -14,7 +14,7 @@ It is intentionally boring:
 
 ## Current Server Fit
 
-On April 24, 2026, the live Hostinger Debian host at `100.121.74.70` was running these containers:
+On April 24, 2026, the live Hostinger Debian host reachable with `ssh gsvr` was running these containers:
 
 - `edge-proxy-proxy-1`
 - `gu-wenda-site-app-1`
@@ -207,7 +207,7 @@ The default live layout is:
 First-time setup or routine update:
 
 ```bash
-ssh gwd@100.121.74.70
+ssh gsvr
 cd ~/docker-health-agent
 git pull --ff-only
 DOCKER_HEALTH_AGENT_CONFIG_DIR="$HOME/docker-health-agent-config" ./scripts/deploy_server.sh
@@ -257,7 +257,7 @@ docker logs --tail 100 docker-health-agent
 Copy the repository to the server, usually at `/opt/docker-health-agent`, then run the install helper:
 
 ```bash
-ssh gwd@100.121.74.70
+ssh gsvr
 sudo apt update
 sudo apt install -y python3-venv python3-pip
 sudo mkdir -p /opt/docker-health-agent
